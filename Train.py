@@ -13,10 +13,10 @@ os.system("clear")
 
 # ------------------ PARAMS ------------------
 fps = 30
-numHidden = 4
-alpha = 0.01
-epochs = 25
-batchSize = 5
+numHidden = 128
+alpha = 1e-4
+epochs = 100
+batchSize = 64
 split=.7
 
 
@@ -27,6 +27,7 @@ fw = np.shape(np.array(data['images'][0]))[0]
 fh = np.shape(np.array(data['images'][0]))[1]
 
 nbins = np.size(data['encoded_angles'][0])
+bins = np.linspace(-165, 165, nbins)
 
 # ------------------ PROCESS DATA ------------------
 
@@ -60,18 +61,35 @@ mdl = tf.keras.Sequential([
 ])
 mdl.summary()
 
-# ---------- MODEL TRAINING ----------
+
 mdl.compile(optimizer=tf.keras.optimizers.Adam(alpha),
               loss='mse')
-mdl.fit(inp, tgt, epochs=epochs, validation_data=(inpV, tgtV), batch_size=batchSize)
+mdl.fit(inp, tgt, epochs=epochs, validation_data=(inpV, tgtV), batch_size=batchSize, shuffle=True)
 #mdl.fit(inp, tgt, epochs=epochs, batch_size=batchSize)
 mdl.save("Models/mdl" + str(numHidden) + ".keras")
+
+# ---------- MODEL INFERENCE ----------
+
+frame = 0
+angles = []
+
+fr = np.reshape(np.ndarray.flatten(np.array(data['images'])/255),(numel, fw*fh))
+y = mdl.predict(fr)
+
+while frame < np.round(numel):
+    # image Preprocessing
+    yhat = y[frame]
+    angles.append(bins[yhat.argmax(axis=0)])
+    
+    frame+=1
+
 
 # ---------- MODEL FIT EVAL ----------
 plt.figure()
 plt.plot(np.array(data['angles']))
+plt.plot(np.array(angles))
 plt.xlabel("Index (Time)")
 plt.ylabel("Steering Angle (Deg)")
 plt.grid()
-plt.legend(["Ground Truth (Human)"])
+plt.legend(["Ground Truth (Human)", "Model Inference"])
 plt.title("Driving Dataset - Model")

@@ -21,6 +21,9 @@ numel = (np.size(data['angles']))
 fw = np.shape(np.array(data['images'][0]))[0]
 fh = np.shape(np.array(data['images'][0]))[1]
 
+nbins = np.size(data['encoded_angles'][0])
+bins = np.linspace(-165, 165, nbins)
+
 # ------------------ MODEL ------------------
 
 mdl = tf.keras.models.load_model("Models/mdl" + str(numHidden) + ".keras")
@@ -53,7 +56,7 @@ while frame < numel:
     
     # INFERENCE
     inference = mdl.predict(np.reshape(np.ndarray.flatten(np.array(data['images'][frame])/255),(1, fw*fh)))
-    inference = inference[0][0]
+    inference = bins[inference.argmax(axis=1)[0]]
     
     # Add text overlay (AI)
     text = "TEST"
