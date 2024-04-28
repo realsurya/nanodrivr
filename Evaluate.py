@@ -56,7 +56,8 @@ while frame < numel:
                                         int(np.round(160+50*np.sin((data['angles'][frame]/180)*np.pi - np.pi/2)))),(0,0,0),5)
     
     # INFERENCE
-    inference = mdl.predict(np.reshape(np.ndarray.flatten(data['images'][0]),(fw*fh,)))
+    #inference = mdl.predict(np.ndarray.flatten(data['images'][frame]))
+    inference = 0
     
     # Add text overlay (AI)
     text = "TEST"
