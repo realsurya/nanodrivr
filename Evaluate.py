@@ -13,7 +13,7 @@ os.system("clear")
 
 # ------------------ PARAMS ------------------
 fps = 30
-numHidden = 10
+numHidden = 4
 
 # ------------------ IMPORT DATA ------------------
 data = h5py.File("track_data_2.h5")
@@ -23,11 +23,7 @@ fh = np.shape(np.array(data['images'][0]))[1]
 
 # ------------------ MODEL ------------------
 
-mdl = tf.keras.Sequential([
-    tf.keras.layers.Input(shape=(fw*fh,)),  # Input layer
-    tf.keras.layers.Dense(numHidden, activation='sigmoid'),  # Hidden layer
-    tf.keras.layers.Dense(1)  # Output layer
-])
+mdl = tf.keras.models.load_model("Models/mdl" + str(numHidden) + ".keras")
 
 # ------------------ PLAYBACK DATA ------------------
 
@@ -56,8 +52,8 @@ while frame < numel:
                                         int(np.round(160+50*np.sin((data['angles'][frame]/180)*np.pi - np.pi/2)))),(0,0,0),5)
     
     # INFERENCE
-    #inference = mdl.predict(np.ndarray.flatten(data['images'][frame]))
-    inference = 0
+    inference = mdl.predict(np.reshape(np.ndarray.flatten(np.array(data['images'][frame])/255),(1, fw*fh)))
+    inference = inference[0][0]
     
     # Add text overlay (AI)
     text = "TEST"
@@ -68,12 +64,12 @@ while frame < numel:
 
 
     cv2.putText(img, "Model Inference:", (300, 0+text_size[1]*2), font, font_scale, (0, 0, 0), font_thickness)
-    cv2.putText(img, "Steering:"+str(np.round(data['angles'][frame],2)), (330, 0+text_size[1]*4), font, font_scale, (0, 0, 0), font_thickness)
+    cv2.putText(img, "Steering:"+str(np.round(inference,2)), (330, 0+text_size[1]*4), font, font_scale, (0, 0, 0), font_thickness)
 
     # Add Wheel overlay (AI)
     cv2.circle(img,(400,160), 50, (0,0,0), 5)
-    cv2.line(img,(400,160),(int(np.round(400+50*np.cos((data['angles'][frame]/180)*np.pi - np.pi/2))),
-                                        int(np.round(160+50*np.sin((data['angles'][frame]/180)*np.pi - np.pi/2)))),(0,0,0),5)
+    cv2.line(img,(400,160),(int(np.round(400+50*np.cos((inference/180)*np.pi - np.pi/2))),
+                                        int(np.round(160+50*np.sin((inference/180)*np.pi - np.pi/2)))),(0,0,0),5)
     
 
     cv2.imshow("image", img)
@@ -84,5 +80,5 @@ while frame < numel:
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
     
-data.close()
+#data.close()
 cv2.destroyAllWindows()
