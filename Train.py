@@ -16,7 +16,7 @@ fps = 30
 numHidden = 128
 alpha = 1e-4
 epochs = 100
-batchSize = 64
+batchSize = 1
 split=.7
 
 
